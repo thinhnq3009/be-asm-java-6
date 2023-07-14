@@ -1,6 +1,7 @@
 package com.shop.asm.servicies;
 
 import com.shop.asm.auth.Role;
+import com.shop.asm.dto.UserDto;
 import com.shop.asm.entity.User;
 import com.shop.asm.repositories.UserRepository;
 import com.shop.asm.requests.AuthenticateRequest;
@@ -9,10 +10,11 @@ import com.shop.asm.responses.AuthenticationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -47,10 +49,11 @@ public class AuthenticationService {
         return AuthenticationResponse
                 .builder()
                 .token(token)
+                .user(userService.convertToDto(user))
                 .build();
     }
 
-    public AuthenticationResponse authenticate(AuthenticateRequest request) {
+    public AuthenticationResponse login(AuthenticateRequest request) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -70,7 +73,23 @@ public class AuthenticationService {
         return AuthenticationResponse
                 .builder()
                 .token(token)
+                .user(userService.convertToDto((User) userDetails))
                 .build();
+
+
+    }
+
+    public AuthenticationResponse authenticate(String token) {
+
+
+            UserDto userDto = jwtService.extractUserDto(token);
+
+            return
+                    AuthenticationResponse
+                            .builder()
+                            .token(token)
+                            .user(userDto)
+                            .build();
 
 
     }

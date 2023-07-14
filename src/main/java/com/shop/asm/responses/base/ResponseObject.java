@@ -1,4 +1,4 @@
-package com.shop.asm.responses;
+package com.shop.asm.responses.base;
 
 import lombok.*;
 
@@ -6,8 +6,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public  class RespontObject<T> {
-
+public  class ResponseObject<T> {
     private String message;
 
     private String status;

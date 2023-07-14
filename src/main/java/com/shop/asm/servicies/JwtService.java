@@ -1,5 +1,8 @@
 package com.shop.asm.servicies;
 
+import com.shop.asm.auth.Role;
+import com.shop.asm.dto.UserDto;
+import com.shop.asm.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -10,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -39,9 +41,20 @@ public class JwtService {
                 .getBody();
     }
 
+    public UserDto extractUserDto(String token) {
+        Claims claims = extractAllClaims(token);
+        UserDto userDto = new UserDto();
+        userDto.setRole(Role.valueOf((String) claims.get("role")));
+        userDto.setFullname((String) claims.get("fullname"));
+        userDto.setPhone((String) claims.get("phone"));
+        userDto.setEmail((String) claims.get("email"));
+        return userDto;
+
+    }
+
     public String generateToken(Map<String, Object> claims, UserDetails userDetails) {
 
-        return  Jwts
+        return Jwts
                 .builder()
                 .setSubject(userDetails.getUsername())
                 .setClaims(claims)
@@ -52,15 +65,40 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+        User user = (User) userDetails;
+        Map<String, Object> map = new HashMap<>();
+        copyUserToMap(user, map);
+
+        return generateToken(map, userDetails);
+    }
+
+    private static void copyUserToMap(User user, Map<String, Object> map) {
+        map.put("role", user.getRole());
+        map.put("fullname", user.getFullname());
+        map.put("phone", user.getPhone());
+        map.put("email", user.getEmail());
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         return claimsResolver.apply(extractAllClaims(token));
     }
 
+    public boolean validateToken(String token, String username) {
+        return extractUsername(token).equals(username) && !isExpired(token);
+    }
+
+    public boolean validateToken(String token, UserDetails userDetails) {
+        return validateToken(token, userDetails.getUsername());
+    }
 
 
+    public boolean isExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
 
 
 }

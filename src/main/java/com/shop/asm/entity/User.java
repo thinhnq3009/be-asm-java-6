@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -37,6 +38,20 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @OneToMany(mappedBy = "buyer")
+    private List<Order> ordersBought = new ArrayList<>();
+
+    @OneToMany(mappedBy = "seller")
+    private List<Order> ordersSold = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Address> reviews = new ArrayList<>();
+
+
+    /*
+     * Method area
+     */
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
